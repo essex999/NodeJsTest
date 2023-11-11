@@ -1,38 +1,36 @@
 const http = require("http");
-
 const getUsers = require("./modules/users");
-
 const { URL } = require("url");
 
 const server = http.createServer((request, response) => {
   const parsedUrl = new URL(`http://${request.headers.host}${request.url}`);
+  const helloParam = parsedUrl.searchParams.get("hello");
+  const usersParam = parsedUrl.searchParams.get("users");
 
-  if (parsedUrl.pathname === "/hello") {
-    const name = parsedUrl.searchParams.get("name");
-
-    if (name) {
-      response.writeHead(200, { "Content-Type": "text/plain" });
-      response.write(`Hello, ${name}!`);
-    } else {
+  if (helloParam !== null) {
+    if (helloParam === "") {
       response.writeHead(400, { "Content-Type": "text/plain" });
       response.write("Enter a name");
+    } else {
+      response.writeHead(200, { "Content-Type": "text/plain" });
+      response.write(`Hello, ${helloParam}!`);
     }
-    response.end();
-  } else if (parsedUrl.pathname === "/users") {
-    response.writeHead(200, { "Content-Type": "application/json" });
-    response.write(getUsers());
-    response.end();
-  } else if (parsedUrl.pathname === "/") {
-    response.writeHead(200, { "Content-Type": "text/plain" });
-    response.write("Hello World!");
-    response.end();
-  } else {
+  } else if (usersParam !== null) {
+    if (usersParam === "") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.write(getUsers());
+    }
+  } else if (parsedUrl.search !== "") {
     response.writeHead(500, { "Content-Type": "text/plain" });
     response.write(" ");
-    response.end();
+  } else {
+    response.writeHead(200, { "Content-Type": "text/plain" });
+    response.write("Hello World!");
   }
+
+  response.end();
 });
 
 server.listen(3003, () => {
-  console.log("server run 3000 port");
+  console.log("Server is running on port 3003");
 });
