@@ -1,24 +1,36 @@
 const http = require("http");
-
 const getUsers = require("./modules/users");
+const { URL } = require("url");
 
 const server = http.createServer((request, response) => {
-  if (request.url === "/users") {
-    response.status = 200;
-    response.statusMessage = "ok";
-    response.header = "Content-Type: application/json";
-    response.write(getUsers());
-    response.end();
-    return;
+  const parsedUrl = new URL(`http://${request.headers.host}${request.url}`);
+  const helloParam = parsedUrl.searchParams.get("hello");
+  const usersParam = parsedUrl.searchParams.get("users");
+
+  if (helloParam !== null) {
+    if (helloParam === "") {
+      response.writeHead(400, { "Content-Type": "text/plain" });
+      response.write("Enter a name");
+    } else {
+      response.writeHead(200, { "Content-Type": "text/plain" });
+      response.write(`Hello, ${helloParam}!`);
+    }
+  } else if (usersParam !== null) {
+    if (usersParam === "") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.write(getUsers());
+    }
+  } else if (parsedUrl.search !== "") {
+    response.writeHead(500, { "Content-Type": "text/plain" });
+    response.write(" ");
+  } else {
+    response.writeHead(200, { "Content-Type": "text/plain" });
+    response.write("Hello World!");
   }
 
-  response.status = 200;
-  response.statusMessage = "ok";
-  response.header = "Content-Type: text/plain";
-  response.write("hello ");
   response.end();
 });
 
 server.listen(3003, () => {
-  console.log("server run 3000 port");
+  console.log("Server is running on port 3003");
 });
